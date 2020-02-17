@@ -60,6 +60,7 @@ import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.google.blocks.ftcrobotcontroller.ProgrammingWebHandlers;
 import com.google.blocks.ftcrobotcontroller.runtime.BlocksOpMode;
 import com.qualcomm.ftccommon.ClassManagerFactory;
@@ -256,6 +257,7 @@ public class FtcRobotControllerActivity extends Activity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
+
     if (enforcePermissionValidator()) {
       return;
     }
@@ -313,6 +315,7 @@ public class FtcRobotControllerActivity extends Activity
           }
         });
         popupMenu.inflate(R.menu.ftc_robot_controller);
+        FtcDashboard.populateMenu(popupMenu.getMenu());
         popupMenu.show();
       }
     });
@@ -380,9 +383,10 @@ public class FtcRobotControllerActivity extends Activity
     if (preferencesHelper.readBoolean(getString(R.string.pref_wifi_automute), false)) {
       initWifiMute(true);
     }
-  }
 
-  protected UpdateUI createUpdateUI() {
+    FtcDashboard.start();
+  }
+    protected UpdateUI createUpdateUI() {
     Restarter restarter = new RobotRestarter();
     UpdateUI result = new UpdateUI(this, dimmer);
     result.setRestarter(restarter);
@@ -459,6 +463,8 @@ public class FtcRobotControllerActivity extends Activity
     if (preferencesHelper != null) preferencesHelper.getSharedPreferences().unregisterOnSharedPreferenceChangeListener(sharedPreferencesListener);
 
     RobotLog.cancelWriteLogcatToDisk();
+
+    FtcDashboard.stop();
   }
 
   protected void bindToService() {
@@ -534,7 +540,7 @@ public class FtcRobotControllerActivity extends Activity
     return true;
   }
 
-  private boolean isRobotRunning() {
+    private boolean isRobotRunning() {
     if (controllerService == null) {
       return false;
     }
@@ -665,7 +671,10 @@ public class FtcRobotControllerActivity extends Activity
         return service.getRobot().eventLoopManager;
       }
     });
+
+    FtcDashboard.attachWebServer(service.getWebServer());
   }
+
 
   private void updateUIAndRequestRobotSetup() {
     if (controllerService != null) {
@@ -704,6 +713,8 @@ public class FtcRobotControllerActivity extends Activity
 
     passReceivedUsbAttachmentsToEventLoop();
     AndroidBoard.showErrorIfUnknownControlHub();
+
+    FtcDashboard.attachEventLoop(eventLoop);
   }
 
   protected OpModeRegister createOpModeRegister() {
